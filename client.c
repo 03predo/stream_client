@@ -75,7 +75,7 @@ void* client_routine(void* arg){
     char* ip_addr = (char*)arg;
     uint8_t confirm = 0xff;
     // create socket
-    int client_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int client_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     
     // bind socket
     struct sockaddr_in server_addr = {
@@ -83,19 +83,17 @@ void* client_routine(void* arg){
         .sin_port = htons(PORT),
         .sin_addr.s_addr = inet_addr(ip_addr),
     };
-    int ret = connect(client_fd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
-    if(ret < 0){
-        printf("connect failed\n");
-        return NULL;
-    }
+    int server_addr_len = sizeof(server_addr);
+ 
+    int bytes_sent = sendto(client_fd, &confirm, 1, 0, (struct sockaddr*)&server_addr, server_addr_len);
+
+
     while(1){
-    
-    
     // receive new message
     printf("waiting for new img\n");
         int bytes_received = 0;
         while(bytes_received != (IMG_HEIGHT * IMG_WIDTH * BYTES_PER_PIXEL)){
-            int tmp = recv(client_fd, img_buf + bytes_received, IMG_HEIGHT*IMG_WIDTH*BYTES_PER_PIXEL - bytes_received, MSG_WAITALL);
+            int tmp = recvfrom(client_fd, img_buf + bytes_received, 1024, MSG_WAITALL, (struct sockaddr*)&server_addr, &server_addr_len);
             if(tmp == -1){
                 printf("recv failed(%d)\n", errno);
                 return NULL;
@@ -105,7 +103,7 @@ void* client_routine(void* arg){
         }
 
     printf("img received, sending confirmation\n");
-    int bytes_sent = send(client_fd, &confirm, 1, 0);
+    int bytes_sent = sendto(client_fd, &confirm, 1, 0, (struct sockaddr*)&server_addr, server_addr_len);
 
     for(int i = 0; i < IMG_HEIGHT; ++i){
         for(int j = 0; j < IMG_WIDTH * BYTES_PER_PIXEL; j += 2){
