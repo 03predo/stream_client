@@ -38,7 +38,7 @@ void client_init(){
     
     struct timeval tv;
     tv.tv_sec = 0;
-    tv.tv_usec = 100000;
+    tv.tv_usec = 70000;
     setsockopt(client.fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
     // bind socket
@@ -83,20 +83,16 @@ void client_get_frame(uint8_t img_buf[IMG_HEIGHT*IMG_WIDTH*BYTES_PER_PIXEL]){
                 LOGD("recv data with size=%d, seq_num=%u, remaining seq_num: %#x\n", tmp, server_msg[1], msg[1]);
                 memcpy(img_buf + (tmp - 2) * server_msg[1], server_msg + 2, tmp - 2); 
                 break;
-            case END:
-                
+            case END:             
                 LOG("recv end, remaining seq_num: %#x\n", msg[1]);
                 if(msg[1] == 0){
                     LOGD("all seq_num recvd\n");
                     img_received = true;
                     break;
                 }
-                return;
-                msg[0] = RETRANSMIT;
-                sendto(client.fd, msg, 2, 0, (struct sockaddr*)&client.server_addr, client.server_addr_len);
-                break;
+                //return;
             default:
-                LOG("unknown msg id: %u", server_msg[0]);
+                LOG("unknown msg id: %u\n", server_msg[0]);
                 break;
         }
     } 

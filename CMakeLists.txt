@@ -4,9 +4,9 @@ project(stream_client)
 add_compile_definitions(IMG_HEIGHT=240
                         IMG_WIDTH=320
                         BYTES_PER_PIXEL=2
-                        FPS=10
+                        FPS=30
                         PORT=2848
-                        SERVER_IP="192.168.1.27"
+                        SERVER_IP="10.0.0.38"
                         )
                     
 

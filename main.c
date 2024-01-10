@@ -52,6 +52,7 @@ void* frame_timer(void* arg){
 
 void* client_routine(void* arg){
 
+    sleep(1);
     client_init();
     while(1){
         client_get_frame(img_buf);
